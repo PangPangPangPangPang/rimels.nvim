@@ -23,7 +23,10 @@ candidates like a real IME, and everything is a no-op while toggled off.
 
 ## Install the rime_ls binary and a schema
 
-macOS (Apple Silicon or Intel):
+On macOS just run `:RimeInstall` (or set `install = { auto = true }` to do it on first
+start). It installs whatever is missing — `librime` via Homebrew, the `rime_ls` binary and
+the rime-ice schema — then restarts rime_ls. Manual steps, for macOS (Apple Silicon or
+Intel) or if you prefer to do it yourself:
 
 ```sh
 # 1. librime (the prebuilt rime_ls links it dynamically)
@@ -111,6 +114,19 @@ require("rimels").setup({
     show_order_in_label = true,
   },
   digit_accept = true, -- typing 1-9 commits the corresponding candidate
+  install = {
+    auto = false, -- run :RimeInstall on startup when something is missing
+    version = "v0.4.3", -- rime_ls release
+    schema_repo = "https://github.com/iDvel/rime-ice",
+  },
+  -- popup shown after toggling Chinese input
+  notify = {
+    enabled = true,
+    style = "popup", -- "popup" (floating window at cursor) or "notify" (vim.notify)
+    timeout = 1000, -- ms
+    border = "rounded",
+    messages = { on = "中文", off = "English" },
+  },
 })
 ```
 

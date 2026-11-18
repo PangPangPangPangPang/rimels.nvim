@@ -20,7 +20,7 @@ function M.check()
     health.ok("rime_ls binary: " .. bin)
   else
     health.error("rime_ls binary not found or not executable: " .. bin, {
-      "Download a release from https://github.com/wlh320/rime-ls/releases",
+      "Run :RimeInstall (macOS), or download a release from https://github.com/wlh320/rime-ls/releases",
       "On macOS also run: xattr -d com.apple.quarantine " .. bin,
     })
   end

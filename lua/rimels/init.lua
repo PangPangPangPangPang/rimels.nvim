@@ -22,6 +22,22 @@ local defaults = {
   },
   -- accept a candidate by typing its digit (1-9) directly
   digit_accept = true,
+  -- :RimeInstall fetches librime (brew), the rime_ls binary and a schema (macOS only)
+  install = {
+    -- run :RimeInstall automatically on startup when something is missing
+    auto = false,
+    version = "v0.4.3",
+    schema_repo = "https://github.com/iDvel/rime-ice",
+  },
+  -- feedback shown after toggling Chinese input
+  notify = {
+    enabled = true,
+    -- "popup": floating window near the cursor; "notify": vim.notify
+    style = "popup",
+    timeout = 1000, -- ms
+    border = "rounded",
+    messages = { on = "中文", off = "English" },
+  },
 }
 
 M.options = nil
@@ -52,6 +68,16 @@ function M.toggle()
   execute_command("rime-ls.toggle-rime", function(result)
     -- the server answers null instead of false when toggling off
     vim.g.rime_enabled = result == true
+
+    local n = M.options and M.options.notify
+    if n and n.enabled then
+      local text = vim.g.rime_enabled and n.messages.on or n.messages.off
+      if n.style == "notify" then
+        vim.notify(text, vim.log.levels.INFO, { title = "rimels" })
+      else
+        require("rimels.popup").show(text, { timeout = n.timeout, border = n.border })
+      end
+    end
   end)
 end
 
@@ -76,6 +102,24 @@ function M.setup(opts)
 
   vim.api.nvim_create_user_command("RimeToggle", M.toggle, { desc = "Toggle rime-ls Chinese input" })
   vim.api.nvim_create_user_command("RimeSync", M.sync, { desc = "Sync rime-ls user data" })
+  vim.api.nvim_create_user_command("RimeInstall", function()
+    require("rimels.install").run()
+  end, { desc = "Install librime, rime_ls and a Rime schema" })
+
+  local missing = require("rimels.install").missing(M.options)
+  if #missing > 0 then
+    if M.options.install.auto then
+      vim.schedule(function()
+        require("rimels.install").run()
+      end)
+    else
+      vim.schedule(function()
+        vim.notify("Missing: " .. table.concat(missing, ", ") .. ". Run :RimeInstall", vim.log.levels.WARN, {
+          title = "rimels",
+        })
+      end)
+    end
+  end
 end
 
 return M
